@@ -1,0 +1,5 @@
+economy:
+  currency_name: "Cred"
+  currency_symbol: "Cr"
+  initial_grant: 500
+  transaction_tax: 0.05

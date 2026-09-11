@@ -1,0 +1,19 @@
+name: ElyonaEconomy
+version: 1.0.0
+main: world.elyona.economy.ElyonaEconomyPlugin
+api-version: "1.21"
+authors: [Elyona World]
+depend: [ElyonaCore]
+
+commands:
+  balance:
+    description: 所持Credを確認する
+    usage: /balance
+    aliases: [bal]
+  pay:
+    description: 他のプレイヤーにCredを送金する（税あり）
+    usage: /pay <player> <amount>
+  eco:
+    description: 残高を管理する（管理者用）
+    usage: /eco <give|take|set> <player> <amount>
+    permission: elyona.admin
