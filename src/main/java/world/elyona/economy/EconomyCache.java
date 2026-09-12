@@ -83,14 +83,28 @@ public class EconomyCache {
         persist(uuid, clamped);
     }
 
-    /** 残高加算（キャッシュ更新と同時にDBへも即時反映する） */
+    /**
+     * 残高加算（キャッシュ更新と同時にDBへも即時反映する）。
+     * amountが負の場合、符号反転により実質的な減算になりsubtractBalanceの残高チェックを
+     * すり抜けてしまうため、呼び出し元のバグとして早期に検出できるよう例外にする。
+     */
     public void addBalance(UUID uuid, long amount) {
+        if (amount < 0) {
+            throw new IllegalArgumentException("addBalanceに負の値は渡せません: " + amount);
+        }
         long newBalance = cache.merge(uuid, amount, Long::sum);
         persist(uuid, newBalance);
     }
 
-    /** 残高減算（キャッシュ更新と同時にDBへも即時反映する） */
+    /**
+     * 残高減算（キャッシュ更新と同時にDBへも即時反映する）。
+     * amountが負の場合、current < amount の判定が意図と逆転し実質的な加算になってしまうため、
+     * 呼び出し元のバグとして早期に検出できるよう例外にする。
+     */
     public boolean subtractBalance(UUID uuid, long amount) {
+        if (amount < 0) {
+            throw new IllegalArgumentException("subtractBalanceに負の値は渡せません: " + amount);
+        }
         Long current = cache.get(uuid);
         if (current == null) current = getBalance(uuid);
         if (current < amount) return false;

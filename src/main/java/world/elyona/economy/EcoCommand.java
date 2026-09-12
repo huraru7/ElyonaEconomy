@@ -69,6 +69,7 @@ public class EcoCommand implements CommandExecutor {
 
         switch (subCmd) {
             case "give" -> {
+                if (amount < 0) { sender.sendMessage("金額は0以上を指定してください。"); return true; }
                 cache.addBalance(targetUuid, amount);
                 sender.sendMessage(targetName + " に " + sym + " " + amount + " を付与しました。残高: " + sym + " " + cache.getBalance(targetUuid));
                 if (target != null) mimic.sendTo(target, sym + " " + amount + " が付与されました。残高: " + sym + " " + cache.getBalance(targetUuid));

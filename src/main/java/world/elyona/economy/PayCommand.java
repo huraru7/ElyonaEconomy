@@ -11,6 +11,9 @@ import world.elyona.core.mimic.MimicMessenger;
 
 public class PayCommand implements CommandExecutor {
 
+    /** これを超える金額は税計算や合計額の計算でlongをオーバーフローさせうるため上限とする */
+    private static final long MAX_TRANSFER_AMOUNT = Long.MAX_VALUE / 4;
+
     private final JavaPlugin plugin;
     private final EconomyCache cache;
     private final MimicMessenger mimic;
@@ -59,9 +62,20 @@ public class PayCommand implements CommandExecutor {
             return true;
         }
 
-        // 税計算
+        if (amount > MAX_TRANSFER_AMOUNT) {
+            mimic.sendTo(player, "金額が大きすぎます。");
+            return true;
+        }
+
+        // 税計算(税込み合計額がlongの範囲を超える場合は例外にして弾く)
         long tax = (long) Math.ceil(amount * config.getTransactionTax());
-        long totalDeduct = amount + tax;
+        long totalDeduct;
+        try {
+            totalDeduct = Math.addExact(amount, tax);
+        } catch (ArithmeticException e) {
+            mimic.sendTo(player, "金額が大きすぎます。");
+            return true;
+        }
 
         long senderBalance = cache.getBalance(player.getUniqueId());
         if (senderBalance < totalDeduct) {
