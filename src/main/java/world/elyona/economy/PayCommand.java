@@ -4,12 +4,16 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import world.elyona.core.event.ElyonaPayEvent;
 import world.elyona.core.mimic.MimicMessenger;
 
-public class PayCommand implements CommandExecutor {
+import java.util.List;
+import java.util.stream.Collectors;
+
+public class PayCommand implements CommandExecutor, TabCompleter {
 
     /** これを超える金額は税計算や合計額の計算でlongをオーバーフローさせうるため上限とする */
     private static final long MAX_TRANSFER_AMOUNT = Long.MAX_VALUE / 4;
@@ -99,5 +103,17 @@ public class PayCommand implements CommandExecutor {
 
         plugin.getLogger().info("[Pay] " + player.getName() + " -> " + target.getName() + " " + amount + " Cr (税: " + tax + " Cr)");
         return true;
+    }
+
+    @Override
+    public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
+        if (args.length != 1) return List.of(); // 第2引数(金額)は数値のため候補を出さない
+
+        String prefix = args[0].toLowerCase();
+        return Bukkit.getOnlinePlayers().stream()
+                .map(Player::getName)
+                .filter(name -> !name.equals(sender.getName()))
+                .filter(name -> name.toLowerCase().startsWith(prefix))
+                .collect(Collectors.toList());
     }
 }

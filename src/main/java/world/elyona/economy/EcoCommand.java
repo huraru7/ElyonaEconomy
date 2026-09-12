@@ -5,12 +5,15 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 import world.elyona.core.mimic.MimicMessenger;
 
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
-public class EcoCommand implements CommandExecutor {
+public class EcoCommand implements CommandExecutor, TabCompleter {
 
     private final EconomyCache cache;
     private final MimicMessenger mimic;
@@ -90,5 +93,25 @@ public class EcoCommand implements CommandExecutor {
             default -> sender.sendMessage("使用方法: /eco <give|take|set> <player> <amount>");
         }
         return true;
+    }
+
+    @Override
+    public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
+        if (!sender.hasPermission("elyona.admin")) return List.of();
+
+        if (args.length == 1) {
+            String prefix = args[0].toLowerCase();
+            return List.of("give", "take", "set").stream()
+                    .filter(c -> c.startsWith(prefix))
+                    .collect(Collectors.toList());
+        }
+        if (args.length == 2) {
+            String prefix = args[1].toLowerCase();
+            return Bukkit.getOnlinePlayers().stream()
+                    .map(Player::getName)
+                    .filter(name -> name.toLowerCase().startsWith(prefix))
+                    .collect(Collectors.toList());
+        }
+        return List.of(); // 第3引数(金額)は数値のため候補を出さない
     }
 }
